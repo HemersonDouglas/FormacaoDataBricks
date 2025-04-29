@@ -16,10 +16,10 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ${APP_SRC_PATH}:/opt/bitnami/spark/jobs
-      - ${APP_STORAGE_PATH}:/opt/bitnami/spark/storage
-      - ${APP_LOG_PATH}:/opt/bitnami/spark/logs/events
-      - ${APP_METRICS_PATH}:/opt/bitnami/spark/metrics
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/src:/opt/bitnami/spark/jobs
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/storage:/opt/bitnami/spark/storage
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/build/logs:/opt/bitnami/spark/logs/events
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/build/metrics:/opt/bitnami/spark/metrics
 
   # Spark Workers
   spark-worker-1:
@@ -37,10 +37,10 @@ services:
       - SPARK_USER=spark
       - SPARK_LOG_CONF=/opt/bitnami/spark/conf/log4j2.properties
     volumes:
-      - ${APP_SRC_PATH}:/opt/bitnami/spark/jobs
-      - ${APP_STORAGE_PATH}:/opt/bitnami/spark/storage
-      - ${APP_LOG_PATH}:/opt/bitnami/spark/logs/events
-      - ${APP_METRICS_PATH}:/opt/bitnami/spark/metrics
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/src:/opt/bitnami/spark/jobs
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/storage:/opt/bitnami/spark/storage
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/build/logs:/opt/bitnami/spark/logs/events
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/build/metrics:/opt/bitnami/spark/metrics
     depends_on:
       - spark-master
 
@@ -59,10 +59,10 @@ services:
       - SPARK_USER=spark
       - SPARK_LOG_CONF=/opt/bitnami/spark/conf/log4j2.properties
     volumes:
-      - ${APP_SRC_PATH}:/opt/bitnami/spark/jobs
-      - ${APP_STORAGE_PATH}:/opt/bitnami/spark/storage
-      - ${APP_LOG_PATH}:/opt/bitnami/spark/logs/events
-      - ${APP_METRICS_PATH}:/opt/bitnami/spark/metrics
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/src:/opt/bitnami/spark/jobs
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/storage:/opt/bitnami/spark/storage
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/build/logs:/opt/bitnami/spark/logs/events
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/build/metrics:/opt/bitnami/spark/metrics
     depends_on:
       - spark-master
 
@@ -81,10 +81,10 @@ services:
       - SPARK_USER=spark
       - SPARK_LOG_CONF=/opt/bitnami/spark/conf/log4j2.properties
     volumes:
-      - ${APP_SRC_PATH}:/opt/bitnami/spark/jobs
-      - ${APP_STORAGE_PATH}:/opt/bitnami/spark/storage
-      - ${APP_LOG_PATH}:/opt/bitnami/spark/logs/events
-      - ${APP_METRICS_PATH}:/opt/bitnami/spark/metrics
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/src:/opt/bitnami/spark/jobs
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/storage:/opt/bitnami/spark/storage
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/build/logs:/opt/bitnami/spark/logs/events
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/build/metrics:/opt/bitnami/spark/metrics
     depends_on:
       - spark-master
 
@@ -105,8 +105,8 @@ services:
       - 18080:18080
       - 4040:4040
     volumes:
-      - ${APP_LOG_PATH}:/opt/bitnami/spark/logs/events
-      - ${APP_METRICS_PATH}:/opt/bitnami/spark/metrics
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/build/logs:/opt/bitnami/spark/logs/events
+      - /f/Curso Databricks/Projeto-Spark-Databricks/frm-spark-databricks-mec/build/metrics:/opt/bitnami/spark/metrics
     depends_on:
       - spark-master
       - spark-worker-1
