@@ -1,8 +1,9 @@
 """
-docker exec -it spark-master /opt/bitnami/spark/bin/spark-submit \
-  --master spark://spark-master:7077 \
-  --deploy-mode client \
-  /opt/bitnami/spark/jobs/app/mod-2-pr-2.py
+F:\Curso Databricks\Projeto-Spark-Databricks> docker exec -it spark-master `
+>>   /opt/bitnami/spark/bin/spark-submit `
+>>   --master spark://spark-master:7077 `
+>>   --deploy-mode client `
+>>   /opt/bitnami/spark/jobs/app/mod-2-pr-2.py
 """
 
 from pyspark.sql import SparkSession
