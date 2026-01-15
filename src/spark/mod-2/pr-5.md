@@ -232,8 +232,8 @@ restaurant_scores = restaurants_df.select(
     round(col("average_rating") * sqrt(col("num_reviews") / 1000), 2).alias("score")
 )
 
-print("Restaurant Scores:")
-restaurant_scores.orderBy(col("score").desc()).show(5)
+
+
 ```
 
 ### Date and Time Operations

@@ -1,85 +1,152 @@
 """
-docker exec -it spark-master /opt/bitnami/spark/bin/spark-submit \
-  --master spark://spark-master:7077 \
-  --deploy-mode client \
+docker exec -it spark-master `
+  /opt/bitnami/spark/bin/spark-submit `
+  --master spark://spark-master:7077 `
+  --deploy-mode client `
   /opt/bitnami/spark/jobs/app/mod-2-pr-5-basic-transformation.py
 """
-
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, when, lit, concat, upper, lower, round, sqrt
+from pyspark.sql.functions import col, upper, lower, concat, lit, round, sqrt, abs, to_timestamp, date_format, current_timestamp, datediff, when
 
+# Create a Spark session
 spark = SparkSession.builder \
+    .appName("Data Ingestion") \
+    .master("local[*]") \
     .getOrCreate()
 
-# TODO read file
-df_rest = spark.read.json("./storage/mysql/restaurants/01JS4W5A7YWTYRQKDA7F7N95VY.jsonl")
+# Load datasets
+df_restaurants = spark.read.json("./storage/mysql/restaurants/01JS4W5A7YWTYRQKDA7F7N95VY.jsonl")
+df_drivers = spark.read.json("./storage/postgres/drivers/01JS4W5A74BK7P4BPTJV1D3MHA.jsonl")
+df_orders = spark.read.json("./storage/kafka/orders/01JS4W5A7XY65S9Z69BY51BEJ4.jsonl")
 
-df_rest.count()
-df_rest.printSchema()
-df_rest.show(5)
+'''
+# Display the schemas for reference
+print("Restaurants Schema:")
+df_restaurants.printSchema()
 
-# TODO 1. selecting columns
+print("Drivers Schema:")
+df_drivers.printSchema()
 
-df_basic_select_rest = df_rest.select("cuisine_type", "num_reviews", "opening_time", "closing_time")
-df_basic_select_rest.show(5)
+print("Orders Schema:")
+df_orders.printSchema()
 
-df_basic_select_rest_col = df_rest.select(
-    col("cuisine_type"),
-    col("num_reviews"),
-    col("opening_time"),
-    col("closing_time")
+# Select columns and using col() function and using alias
+restaurants_details = df_restaurants.select(
+    col("name").alias("restaurant_name"), 
+    col("cuisine_type").alias("cuisine"),
+    col("num_reviews").alias("review_count"), 
+    col("average_rating").alias("rating")
 )
-df_basic_select_rest_col.show(5)
 
-# TODO 2. renaming columns
-
-df_renamed_rest = df_rest.withColumnRenamed("name", "restaurant") \
-    .withColumnRenamed("num_reviews", "reviews") \
-    .withColumnRenamed("cuisine_type", "cuisine") \
-    .withColumnRenamed("opening_time", "open") \
-    .withColumnRenamed("closing_time", "close")
-
-print(df_renamed_rest.columns)
-df_renamed_rest.show(5)
-
-# TODO 3. filtering rows
-df_high_rated_rest = df_rest.filter(col("num_reviews") > 1000)
-df_high_rated_rest.select("name", "cuisine_type").show(5)
-
-df_italian_rest = df_rest.filter(col("cuisine_type") == "Italian")
-df_italian_rest.show(5)
-
-df_most_popular = df_rest.filter("num_reviews > 3000")
-print(df_most_popular.count())
-
-# TODO 4. using logical operators
-good_italian_rest = df_rest.filter(
+# show result
+print("Restaurants Details:")
+restaurants_details.show(5, truncate=False)
+'''
+'''
+# Filter restaurants with high ratings
+high_rated = df_restaurants.filter(col("average_rating") > 4)
+print(f"Number of high-rated restaurants: {high_rated.count()}")
+high_rated.select("name", "cuisine_type", "average_rating").show()
+'''
+'''
+# Filter with multiple conditions
+popular_italian = df_restaurants.filter(
     (col("cuisine_type") == "Italian") &
-    (col("num_reviews") > 500)
+    (col("num_reviews") > 3000)
 )
 
-# TODO 5. transforming columns
-df_uppercase_rest = df_rest.select(
-    upper(col("name")).alias("restaurant"),
+print(f"Number of popular Italian restaurants: {popular_italian.count()}")
+popular_italian.select("name", "city", "cuisine_type", "average_rating", "num_reviews").show(5)
+'''
+
+## 3. Logical and Comparison Operators
+'''
+# Restaurants with exactly 4.2 rating
+exact_rating = df_restaurants.filter(col("average_rating") == 4.2)
+print(f"Restaurants with exactly 4.2 rating: {exact_rating.count()}")
+exact_rating.select("name", "city", "cuisine_type", "average_rating", "num_reviews").show()
+'''
+'''
+# Restaurants with rating not equal to 3.0
+not_average = df_restaurants.filter(col("average_rating") != 3.0)
+print(f"Restaurants with rating not equal to 3.0: {not_average.count()}")
+'''
+'''
+# Transform restaurant names to uppercase
+upeper_restaurant_name = df_restaurants.select(
+    upper(col("name")),
+    col("name"),
+    col("cuisine_type")
+)
+print("Uppercase Restaurant name:")
+upeper_restaurant_name.show(5)
+'''
+'''
+# Concatenate columns
+full_info = df_restaurants.select(
+    col("name"),
     concat(col("city"), lit(", "), col("country")).alias("location")
 )
-df_uppercase_rest.show(5)
 
-# TODO 6. adding new columns
-df_categorized_rest = df_rest.withColumn(
-    "category",
+print("Restaurant with Location:")
+full_info.show(5, truncate=False)
+'''
+'''
+### Numeric Operations
+rounded_ratings = df_restaurants.select(
+    col("name"),
+    col("average_rating"),
+    round(col("average_rating"), 0).alias("rounded_rating")
+)
+print("Rounded Ratings:")
+rounded_ratings.show(5)
+'''
+'''
+# Calculate a simple score from ratings and reviews
+restaurant_score = df_restaurants.select(
+    col("name"),
+    col("average_rating"),
+    col("num_reviews"),
+    round(col("average_rating") * sqrt(col("num_reviews") / 1000), 2).alias("score")
+)
+print("Restaurant Scores:")
+restaurant_score.orderBy(col("score").desc()).show(5)
+'''
+'''
+### Date and Time Operations
+
+# Convert string timestamp to date
+with_dates = df_restaurants.select(
+    col("name"),
+    col("dt_current_timestamp"),
+    to_timestamp(col("dt_current_timestamp")).alias("timestamp")
+)
+
+print("With Timestamp:")
+with_dates.show(5)
+
+# Format dates
+formatted_dates = with_dates.select(
+    col("name"),
+    col("timestamp"),
+    date_format(col("timestamp"), "yyyy-MM-dd").alias("date_only"),
+    date_format(col("timestamp"), "HH:mm:ss").alias("time_only")
+)
+
+print("Formatted Dates:")
+formatted_dates.show(5)
+'''
+
+## 5. Adding and Dropping Columns
+with_category = df_restaurants.withColumn(
+    "rating_category",
     when(col("average_rating") >= 4.5, "Excellent")
     .when(col("average_rating") >= 4.0, "Very Good")
     .when(col("average_rating") >= 3.5, "Good")
-    .when(col("average_rating") >= 3.0, "Average")
+    .when(col("average_rating") >= 3, "Average")
     .otherwise("Poor")
 )
-
-df_categorized_rest.select("name", "cuisine_type", "num_reviews", "average_rating", "category").show(5)
-
-# TODO 7. dropping columns
-df_rest_drop = df_rest.drop("city", "country", "name")
-print(df_rest_drop.columns)
-df_rest_drop.show(5)
+print("With Rating Category:")
+with_category.select("name", "average_rating", "rating_category").show(5)
 
 spark.stop()
